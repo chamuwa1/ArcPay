@@ -4,8 +4,13 @@ import { arcTestnet } from '../js/utils.js';
 
 // Initialize Supabase with Service Role Key (bypasses RLS for secure updates)
 const supabaseUrl = process.env.SUPABASE_URL || 'https://opfealrrtdfszyfvbhsj.supabase.co';
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY;
+
+if (!supabaseServiceKey) {
+  console.error("CRITICAL: Missing Supabase Service Key in environment variables");
+}
+
+const supabase = createClient(supabaseUrl, supabaseServiceKey || 'dummy_key_to_prevent_startup_crash');
 
 // Initialize Viem Client for Arc Testnet
 const publicClient = createPublicClient({
