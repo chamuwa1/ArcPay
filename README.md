@@ -20,7 +20,7 @@ ArcPay is a decentralized payment gateway built for the **Arc Testnet**. Merchan
 | Blockchain | Viem, Arc Testnet RPC |
 | Database | Supabase (Postgres + Realtime) |
 | Backend | Express.js (static server + `/api/verify`) |
-| Deployment | Vercel (recommended) |
+| Deployment | Vercel |
 
 ## Project Structure
 
