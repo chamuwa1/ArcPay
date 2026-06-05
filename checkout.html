@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ArcPay Checkout</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script type="importmap">
+        {
+            "imports": {
+                "viem": "https://esm.sh/viem@2.9.16",
+                "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2.45.1"
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="checkout-container card">
+        <div class="checkout-header">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-bottom: 1rem;">
+                <circle cx="12" cy="12" r="12" fill="#3E74BB"/>
+                <path d="M12 6L18 16H6L12 6Z" fill="white"/>
+            </svg>
+            <h2 id="merchant-name">ArcPay Merchant</h2>
+            <p id="memo-display" class="text-secondary mt-4">Loading order details...</p>
+        </div>
+
+        <div class="amount-display">
+            $<span id="amount-value">0.00</span>
+        </div>
+
+        <div id="connect-prompt" class="text-center mb-8">
+            <p class="text-muted mb-4">Connect your wallet to pay with USDC from any chain.</p>
+            <button id="btn-connect-checkout" class="btn btn-primary" style="width: 100%;">Connect Wallet</button>
+        </div>
+
+        <div id="payment-details" class="hidden">
+            <!-- Connected wallet info bar -->
+            <div id="checkout-wallet-bar" class="checkout-wallet-bar">
+                <div class="checkout-wallet-info">
+                    <div class="checkout-wallet-dot"></div>
+                    <span id="checkout-wallet-addr" class="wallet-address">0x...</span>
+                </div>
+                <button id="btn-change-wallet" class="btn-change-wallet">Change</button>
+            </div>
+
+            <div class="fee-breakdown">
+                <div class="fee-row">
+                    <span>Network</span>
+                    <span id="network-display">Detecting...</span>
+                </div>
+                <div class="fee-row">
+                    <span>Subtotal</span>
+                    <span>$<span id="subtotal-val">0.00</span></span>
+                </div>
+                <div class="fee-row">
+                    <span>Estimated Network Fee</span>
+                    <span>~$<span id="fee-val">0.01</span></span>
+                </div>
+                <div class="fee-row total">
+                    <span>Total</span>
+                    <span>$<span id="total-val">0.00</span></span>
+                </div>
+            </div>
+
+            <!-- Bridge Progress (hidden unless bridging) -->
+            <div id="bridge-progress" class="step-indicator hidden">
+                <div class="step active" id="step-approve">
+                    <div class="step-icon">1</div>
+                    <span>Approve USDC</span>
+                </div>
+                <div class="step" id="step-burn">
+                    <div class="step-icon">2</div>
+                    <span>Initiate Transfer (Burn)</span>
+                </div>
+                <div class="step" id="step-attest">
+                    <div class="step-icon">3</div>
+                    <span>Wait for Attestation (~15s)</span>
+                </div>
+                <div class="step" id="step-mint">
+                    <div class="step-icon">4</div>
+                    <span>Complete Payment on Arc</span>
+                </div>
+            </div>
+
+            <button id="btn-pay" class="btn btn-primary" style="width: 100%; font-size: 1.125rem; padding: 1rem;">
+                Pay with USDC
+            </button>
+        </div>
+
+        <div id="success-screen" class="hidden text-center">
+            <div style="color: #2ecc71; font-size: 4rem; margin-bottom: 1rem;">✓</div>
+            <h3>Payment Successful</h3>
+            <p class="text-secondary mt-4">Your payment settled instantly on the Arc network.</p>
+            <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 1.5rem;">
+                <a id="explorer-link" href="#" target="_blank" class="btn btn-outline">View Receipt</a>
+                <button id="btn-success-disconnect" class="btn btn-outline">Disconnect Wallet</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Wallet Selection Modal for Checkout -->
+    <div id="wallet-modal" class="modal-overlay">
+        <div class="modal-card card">
+            <div class="modal-header">
+                <h3>Connect Wallet</h3>
+                <button id="btn-close-modal" class="btn-icon">&times;</button>
+            </div>
+            <p class="text-secondary mb-4">Select your preferred wallet provider:</p>
+            <div id="wallet-list" class="wallet-list">
+                <div class="text-center text-muted p-4">Scanning for wallets...</div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="app-footer">
+        <div class="container" style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding: 2rem 0; margin-top: 4rem;">
+            <div class="footer-brand" style="color: var(--text-secondary); font-size: 0.9rem;">
+                &copy; 2026 ArcPay. Built for the Arc Network.
+            </div>
+            <div class="footer-links" style="display: flex; gap: 1.5rem;">
+                <a href="#" class="policy-link" data-policy="terms" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; transition: color 0.2s;">Terms of Service</a>
+                <a href="#" class="policy-link" data-policy="privacy" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; transition: color 0.2s;">Privacy Policy</a>
+                <a href="#" class="policy-link" data-policy="security" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; transition: color 0.2s;">Security</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Policy Modal -->
+    <div id="policy-modal" class="modal-overlay">
+        <div class="modal-card card" style="max-width: 600px; max-height: 80vh; overflow-y: auto;">
+            <div class="modal-header">
+                <h3 id="policy-title">Policy</h3>
+                <button id="btn-close-policy" class="btn-icon">&times;</button>
+            </div>
+            <div id="policy-content" class="text-secondary" style="font-size: 0.95rem; line-height: 1.6; margin-top: 1rem;">
+                <!-- Content injected via JS -->
+            </div>
+        </div>
+    </div>
+    <script type="module" src="js/arc-kit.js"></script>
+    <script type="module" src="js/checkout.js"></script>
+    <script type="module" src="js/policies.js"></script>
+</body>
+</html>
