@@ -38,8 +38,13 @@ export default async function handler(req, res) {
       .eq('id', paymentId)
       .single();
 
-    if (dbError || !payment) {
-      return res.status(404).json({ error: 'Payment not found' });
+    if (dbError) {
+      console.error('Supabase DB Error in verify.js:', dbError);
+      return res.status(500).json({ error: 'Database error: ' + dbError.message, details: dbError });
+    }
+
+    if (!payment) {
+      return res.status(404).json({ error: 'Payment not found in database' });
     }
 
     if (payment.status === 'completed') {
