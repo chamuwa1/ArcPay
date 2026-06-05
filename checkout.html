@@ -15,8 +15,9 @@
         }
     </script>
 </head>
-<body>
-    <div class="checkout-container card">
+<body class="checkout-body">
+    <main class="checkout-main">
+        <div class="checkout-container card" style="width: 100%; margin: 0 auto;">
         <div class="checkout-header">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-bottom: 1rem;">
                 <circle cx="12" cy="12" r="12" fill="#3E74BB"/>
@@ -98,6 +99,17 @@
                 <button id="btn-success-disconnect" class="btn btn-outline">Disconnect Wallet</button>
             </div>
         </div>
+
+        <div id="cancelled-screen" class="hidden text-center" style="padding: 2rem 0;">
+            <div style="width: 80px; height: 80px; border-radius: 50%; background: rgba(231, 76, 60, 0.1); color: #e74c3c; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; font-size: 3rem;">
+                ✕
+            </div>
+            <h2>Payment Cancelled</h2>
+            <p class="text-muted" style="margin-top: 1rem;">This payment link was cancelled by the merchant and is no longer valid.</p>
+            <div style="margin-top: 2rem;">
+                <button class="btn btn-outline" style="width: 100%" onclick="window.disconnectWallet()">Disconnect Wallet</button>
+            </div>
+        </div>
     </div>
 
     <!-- Wallet Selection Modal for Checkout -->
@@ -114,8 +126,10 @@
         </div>
     </div>
 
-    <footer class="app-footer">
-        <div class="container" style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding: 2rem 0; margin-top: 4rem;">
+    </main>
+
+    <footer class="app-footer" style="width: 100%;">
+        <div class="container" style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding: 1rem 0; margin-top: 2rem;">
             <div class="footer-brand" style="color: var(--text-secondary); font-size: 0.9rem;">
                 &copy; 2026 ArcPay. Built for the Arc Network.
             </div>

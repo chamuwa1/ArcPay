@@ -18,7 +18,7 @@
     </script>
 </head>
 <body>
-    <header class="container">
+    <header class="container header-content">
         <a href="#" class="logo" id="logo-link">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <circle cx="12" cy="12" r="12" fill="#3E74BB"/>
@@ -26,7 +26,10 @@
             </svg>
             ArcPay
         </a>
-        <nav class="nav-center">
+        <button id="mobile-menu-btn" class="mobile-menu-btn" aria-label="Toggle menu">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+        <nav class="nav-center" id="nav-menu">
             <a href="#" id="nav-home-link" class="nav-link hidden">Home</a>
             <a href="#" id="nav-dashboard-link" class="nav-link hidden">Merchant Dashboard</a>
         </nav>
@@ -158,6 +161,48 @@
             </div>
         </div>
     </footer>
+
+    <!-- Edit Amount Modal -->
+    <div id="edit-modal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2>Edit Amount</h2>
+                <button class="modal-close" onclick="document.getElementById('edit-modal').classList.remove('active')">×</button>
+            </div>
+            <div class="modal-body">
+                <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem;">Update the USDC amount for this payment link. The customer's checkout page will update instantly.</p>
+                <div class="form-group">
+                    <label>New Amount (USDC)</label>
+                    <input type="number" id="edit-amount-input" class="form-control" step="0.01" min="0.01" required>
+                </div>
+                <input type="hidden" id="edit-payment-id">
+                <button id="btn-save-amount" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cancel Confirmation Modal -->
+    <div id="cancel-modal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2>Cancel Payment</h2>
+                <button class="modal-close" onclick="document.getElementById('cancel-modal').classList.remove('active')">×</button>
+            </div>
+            <div class="modal-body text-center">
+                <div style="width: 60px; height: 60px; border-radius: 50%; background: rgba(231, 76, 60, 0.1); color: #e74c3c; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; font-size: 2rem;">
+                    !
+                </div>
+                <p style="color: var(--text-primary); margin-bottom: 0.5rem; font-weight: 500;">Are you sure you want to cancel this payment link?</p>
+                <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem;">The customer will no longer be able to pay using this link.</p>
+                
+                <input type="hidden" id="cancel-payment-id">
+                <div style="display: flex; gap: 1rem;">
+                    <button class="btn btn-outline" style="flex: 1;" onclick="document.getElementById('cancel-modal').classList.remove('active')">No, Keep It</button>
+                    <button id="btn-confirm-cancel" class="btn btn-primary" style="flex: 1; background: #e74c3c; box-shadow: 0 4px 14px 0 rgba(231, 76, 60, 0.4);">Yes, Cancel It</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Policy Modal -->
     <div id="policy-modal" class="modal-overlay">

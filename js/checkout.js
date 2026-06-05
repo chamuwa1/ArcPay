@@ -1,5 +1,5 @@
 import { arcKit } from './arc-kit.js';
-import { PaymentStore } from './payment-store.js';
+import { supabase } from './supabase.js';
 import { parseUrlParams, formatCurrency, truncateAddress, ARC_TESTNET_CHAIN_ID, showToast } from './utils.js';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -11,7 +11,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const amountValue = document.getElementById('amount-value');
   const btnConnect = document.getElementById('btn-connect-checkout');
   const connectPrompt = document.getElementById('connect-prompt');
-  const paymentDetails = document.getElementById('payment-details');
+  
+  const paymentDetailsContainer = document.getElementById('payment-details');
   const networkDisplay = document.getElementById('network-display');
   const subtotalVal = document.getElementById('subtotal-val');
   const feeVal = document.getElementById('fee-val');
@@ -21,28 +22,102 @@ document.addEventListener('DOMContentLoaded', () => {
   const explorerLink = document.getElementById('explorer-link');
   const bridgeProgress = document.getElementById('bridge-progress');
   const btnSuccessDisconnect = document.getElementById('btn-success-disconnect');
-
-  // Wallet bar elements
   const checkoutWalletAddr = document.getElementById('checkout-wallet-addr');
   const btnChangeWallet = document.getElementById('btn-change-wallet');
-
-  // Wallet modal elements
   const walletModal = document.getElementById('wallet-modal');
   const walletList = document.getElementById('wallet-list');
   const btnCloseModal = document.getElementById('btn-close-modal');
 
-  if (!params.to || !params.amount) {
-    merchantName.textContent = "Invalid Payment Link";
-    memoDisplay.textContent = "Missing required parameters (to, amount).";
-    btnConnect.classList.add('hidden');
-    return;
-  }
+  let currentAmount = 0;
+  let currentFee = 0;
 
-  // Initial render
-  merchantName.textContent = `Pay ${truncateAddress(params.to)}`;
-  memoDisplay.textContent = params.memo || 'Payment';
-  amountValue.textContent = parseFloat(params.amount).toFixed(2);
-  subtotalVal.textContent = parseFloat(params.amount).toFixed(2);
+  const updatePriceDisplays = (amount) => {
+    currentAmount = parseFloat(amount);
+    amountValue.textContent = currentAmount.toFixed(2);
+    subtotalVal.textContent = currentAmount.toFixed(2);
+    totalVal.textContent = (currentAmount + currentFee).toFixed(2);
+    btnPay.innerHTML = `Pay ${currentAmount.toFixed(2)} USDC`;
+  };
+
+  const loadPaymentDetails = async (paymentId) => {
+    const { data: paymentInfo, error } = await supabase
+      .from('payments')
+      .select('*')
+      .eq('id', paymentId)
+      .single();
+
+    if (error || !paymentInfo) {
+      merchantName.textContent = "Invalid Payment Link";
+      memoDisplay.textContent = "Payment not found.";
+      btnConnect.classList.add('hidden');
+      return;
+    }
+
+    merchantName.textContent = `Pay ${truncateAddress(paymentInfo.merchant)}`;
+    memoDisplay.textContent = paymentInfo.memo || 'Payment';
+    updatePriceDisplays(paymentInfo.amount);
+
+    if (paymentInfo.status === 'cancelled') {
+      paymentDetailsContainer.classList.add('hidden');
+      btnConnect.classList.add('hidden');
+      connectPrompt.classList.add('hidden');
+      document.getElementById('cancelled-screen').classList.remove('hidden');
+      return;
+    }
+
+    if (paymentInfo.status === 'completed') {
+      paymentDetailsContainer.classList.add('hidden');
+      btnConnect.classList.add('hidden');
+      connectPrompt.classList.add('hidden');
+      successScreen.classList.remove('hidden');
+      if (paymentInfo.txhash) {
+        explorerLink.href = `https://testnet.arcscan.app/tx/${paymentInfo.txhash}`;
+      } else {
+        explorerLink.style.display = 'none';
+      }
+      return;
+    }
+
+    // Subscribe to real-time updates
+    window.paymentSubscription = supabase
+      .channel(`payment-${paymentId}`)
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'payments', filter: `id=eq.${paymentId}` }, (payload) => {
+        const newData = payload.new;
+        
+        if (newData.status === 'cancelled') {
+          paymentDetailsContainer.classList.add('hidden');
+          btnConnect.classList.add('hidden');
+          connectPrompt.classList.add('hidden');
+          document.getElementById('cancelled-screen').classList.remove('hidden');
+          return;
+        }
+
+        if (newData.amount && newData.amount !== currentAmount) {
+          updatePriceDisplays(newData.amount);
+          
+          // Flash effect
+          amountValue.classList.remove('price-flash');
+          void amountValue.offsetWidth;
+          amountValue.classList.add('price-flash');
+          
+          showToast("Payment amount was updated by the merchant.");
+          // Update URL param silently so the smart contract logic reads the new amount
+          const url = new URL(window.location);
+          url.searchParams.set('amount', newData.amount);
+          window.history.replaceState({}, '', url);
+        }
+      })
+      .subscribe();
+  };
+
+  if (params.id) {
+    loadPaymentDetails(params.id);
+  } else if (params.to && params.amount) {
+    // Fallback for legacy static links without an ID
+    merchantName.textContent = `Pay ${truncateAddress(params.to)}`;
+    memoDisplay.textContent = params.memo || 'Payment';
+    updatePriceDisplays(params.amount);
+  }
 
   const updateFeeDisplay = (chainId) => {
     let fee = 0.00;
@@ -57,27 +132,29 @@ document.addEventListener('DOMContentLoaded', () => {
       bridgeProgress.classList.remove('hidden');
     }
     
+    currentFee = fee;
     feeVal.textContent = fee.toFixed(2);
-    totalVal.textContent = (parseFloat(params.amount) + fee).toFixed(2);
+    totalVal.textContent = (currentAmount + fee).toFixed(2);
   };
 
   const onWalletConnected = (chainId) => {
     walletModal.classList.remove('active');
     connectPrompt.classList.add('hidden');
-    paymentDetails.classList.remove('hidden');
+    paymentDetailsContainer.classList.remove('hidden');
     checkoutWalletAddr.textContent = truncateAddress(arcKit.account);
     updateFeeDisplay(chainId);
   };
 
   const disconnectAndReset = async () => {
     await arcKit.disconnect();
-    paymentDetails.classList.add('hidden');
+    paymentDetailsContainer.classList.add('hidden');
     connectPrompt.classList.remove('hidden');
     btnConnect.disabled = false;
     btnConnect.textContent = "Connect Wallet";
     btnPay.disabled = false;
     btnPay.textContent = "Pay with USDC";
   };
+  window.disconnectWallet = disconnectAndReset;
 
   const openWalletModal = () => {
     walletList.innerHTML = '';
@@ -173,11 +250,12 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       
       // Execute payment
+      const amountToSend = String(currentAmount || params.amount);
       let result;
       if (arcKit.chainId === ARC_TESTNET_CHAIN_ID) {
-        result = await arcKit.send(params.to, params.amount);
+        result = await arcKit.send(params.to, amountToSend);
       } else {
-        result = await arcKit.bridge(params.to, params.amount);
+        result = await arcKit.bridge(params.to, amountToSend);
       }
       
       if (progressInterval) clearInterval(progressInterval);
@@ -197,7 +275,7 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         }
         
-        paymentDetails.classList.add('hidden');
+        paymentDetailsContainer.classList.add('hidden');
         successScreen.classList.remove('hidden');
         if (result.hash && !result.simulated) {
             explorerLink.href = `https://testnet.arcscan.app/tx/${result.hash}`;

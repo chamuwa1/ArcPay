@@ -239,8 +239,8 @@ header.container {
 .card {
   background-color: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 1.25rem;
-  padding: 2.5rem;
+  border-radius: 1rem;
+  padding: 1.5rem;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   transition: transform var(--transition-smooth), border-color var(--transition-smooth), box-shadow var(--transition-smooth);
@@ -424,7 +424,7 @@ th {
 /* Checkout Widget Styles */
 .checkout-container {
   max-width: 480px;
-  margin: 5rem auto;
+  margin: 2rem auto;
   position: relative;
 }
 
@@ -445,11 +445,11 @@ th {
 }
 
 .amount-display {
-  font-size: 3.5rem;
+  font-size: 2.5rem;
   font-weight: 700;
   font-family: var(--font-family-headings-custom);
   text-align: center;
-  margin: 2rem 0;
+  margin: 1rem 0;
   background: linear-gradient(180deg, #fff 0%, #ccc 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -699,3 +699,235 @@ th {
   color: var(--text-primary);
   background: rgba(255, 255, 255, 0.05);
 }
+
+
+/* ==========================================================================
+   Responsive Media Queries (Mobile First & Tablet)
+   ========================================================================== */
+
+@media screen and (max-width: 768px) {
+  /* Core Spacing & Typography */
+  .container {
+    padding: 0 1rem;
+  }
+  
+  h1 { font-size: 2.5rem; }
+  h2 { font-size: 2rem; }
+  h3 { font-size: 1.5rem; }
+  
+  .subtitle {
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  /* Header & Navigation */
+  .header-content {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem 0;
+  }
+  
+  .nav-links {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .wallet-bar {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  /* Hero Section */
+  .hero {
+    padding: 3rem 0;
+  }
+
+  /* Cards */
+  .card {
+    padding: 1.5rem;
+  }
+
+  /* Grid Layouts */
+  .dashboard-grid, 
+  .checkout-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  /* Table Responsiveness */
+  .card[style*="overflow"] {
+    /* Ensure the table wrapper scrolls horizontally on mobile */
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .tx-table {
+    min-width: 500px; /* Force minimum width to enable scrolling instead of squishing */
+  }
+
+  /* Forms & Buttons */
+  .form-control, .btn {
+    width: 100%;
+  }
+
+  /* Footer */
+  .app-footer .container {
+    flex-direction: column !important;
+    gap: 1rem;
+    text-align: center;
+  }
+  
+  .footer-links {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  /* Checkout Steps */
+  .bridge-steps {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  /* Success Screen Icon */
+  #success-screen > div[style*="font-size: 4rem"] {
+    font-size: 3rem !important;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  h1 { font-size: 2rem; }
+  
+  /* Modal Adjustments */
+  .modal-card {
+    padding: 1.5rem;
+    width: 95%;
+    max-height: 90vh;
+  }
+}
+
+
+
+/* Mobile Menu Styles */
+.mobile-menu-btn {
+  display: none;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  padding: 0.5rem;
+  z-index: 100;
+}
+
+@media screen and (max-width: 768px) {
+  .mobile-menu-btn {
+    display: block;
+    position: absolute;
+    right: 0;
+    top: 1.5rem;
+  }
+  
+  .header-content {
+    flex-direction: row !important;
+    flex-wrap: wrap;
+    position: relative;
+  }
+  
+  /* The hamburger dropdown menu on mobile */
+  .nav-center {
+    display: none;
+    position: absolute;
+    top: 4.5rem;
+    right: 0;
+    left: auto;
+    transform: none;
+    width: auto;
+    min-width: 200px;
+    flex-direction: column;
+    align-items: flex-end;
+    background: rgba(10, 14, 23, 0.98);
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    gap: 1.25rem;
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+    z-index: 50;
+    transform-origin: top right;
+  }
+  
+  .nav-center.mobile-active {
+    display: flex;
+    animation: fadeIn 0.2s ease;
+  }
+  
+  /* Reset header controls to stay in normal document flow */
+  .header-controls {
+    width: 100%;
+    margin-top: 1rem;
+    justify-content: flex-start;
+  }
+}
+
+
+
+/* Actions Buttons for Table */
+.tx-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.btn-sm {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  border-radius: 0.25rem;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-sm:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+}
+
+.btn-sm.btn-danger:hover {
+  background: rgba(231, 76, 60, 0.1);
+  color: #e74c3c;
+  border-color: rgba(231, 76, 60, 0.3);
+}
+
+/* Flash Animation for Real-Time Price Updates */
+@keyframes priceFlash {
+  0% { color: #2ecc71; transform: scale(1.1); }
+  100% { color: var(--text-primary); transform: scale(1); }
+}
+
+.price-flash {
+  animation: priceFlash 1s ease;
+}
+
+.status-cancelled {
+  background: rgba(231, 76, 60, 0.1);
+  color: #e74c3c;
+  border: 1px solid rgba(231, 76, 60, 0.2);
+}
+
+
+body.checkout-body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+main.checkout-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+

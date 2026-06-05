@@ -56,4 +56,25 @@ export class PaymentStore {
     
     return data;
   }
+
+  static async updatePayment(id, merchant, updates) {
+    // Only allow updating amount or status
+    const allowedUpdates = {};
+    if (updates.amount !== undefined) allowedUpdates.amount = parseFloat(updates.amount);
+    if (updates.status !== undefined) allowedUpdates.status = updates.status;
+
+    const { data, error } = await supabase
+      .from('payments')
+      .update(allowedUpdates)
+      .eq('id', id)
+      .eq('merchant', merchant.toLowerCase()) // Extra frontend safety
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Failed to update payment', error);
+      throw error;
+    }
+    return data;
+  }
 }

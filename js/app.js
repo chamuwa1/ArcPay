@@ -6,6 +6,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnGetStarted = document.getElementById('btn-get-started');
   const viewLanding = document.getElementById('view-landing');
   const viewDashboard = document.getElementById('view-dashboard');
+  
+  // Mobile Menu
+  const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+  const navMenu = document.getElementById('nav-menu');
+
+  mobileMenuBtn?.addEventListener('click', () => {
+    navMenu?.classList.toggle('mobile-active');
+  });
+
   const walletContainer = document.getElementById('wallet-container');
   const walletAddress = document.getElementById('wallet-address');
   const btnDisconnect = document.getElementById('btn-disconnect');
@@ -88,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
             showDashboard();
           } catch (error) {
             // Check if error is User Rejected (4001) or a general error
-            if (error.code === 4001 || error.message.includes('User rejected')) {
+            if (error.code === 4001 || error.message?.includes('User rejected')) {
               showToast("Connection cancelled by user.", "error");
             } else {
               showToast(error.message || "Failed to connect.", "error");

@@ -41,32 +41,65 @@ document.addEventListener('DOMContentLoaded', () => {
       .subscribe();
   };
 
+  let showAllTx = false;
+  const TX_PREVIEW_COUNT = 3;
+
+  const renderTxRow = (tx) => `
+    <tr>
+      <td>
+        <div style="font-weight: 500">${tx.memo}</div>
+        <div class="text-muted" style="font-size: 0.8rem">${new Date(tx.createdat).toLocaleString()}</div>
+      </td>
+      <td style="font-weight: 700; font-family: var(--font-family-headings-custom)">
+        ${formatCurrency(tx.amount)}
+      </td>
+      <td>
+        <span class="status-badge status-${tx.status}">
+          ${tx.status.charAt(0).toUpperCase() + tx.status.slice(1)}
+        </span>
+        ${tx.status === 'pending' ? `
+          <div class="tx-actions">
+            <button class="btn-sm edit-btn" data-id="${tx.id}" data-amount="${tx.amount}">Edit</button>
+            <button class="btn-sm btn-danger cancel-btn" data-id="${tx.id}">Cancel</button>
+          </div>
+        ` : ''}
+        ${tx.txhash ? `<div style="font-size: 0.8rem; margin-top: 4px"><a href="https://testnet.arcscan.app/tx/${tx.txhash}" target="_blank" style="color: var(--primary-light)">View on Explorer</a></div>` : ''}
+      </td>
+    </tr>
+  `;
+
   const renderTransactions = async () => {
     txBody.innerHTML = `<tr><td colspan="3" class="text-center text-muted">Loading...</td></tr>`;
     const txs = await PaymentStore.getRecentPayments(arcKit.account);
     
     if (txs.length === 0) {
       txBody.innerHTML = `<tr><td colspan="3" class="text-center text-muted">No transactions yet</td></tr>`;
+      // Remove toggle button if exists
+      document.getElementById('btn-toggle-tx')?.remove();
       return;
     }
     
-    txBody.innerHTML = txs.map(tx => `
-      <tr>
-        <td>
-          <div style="font-weight: 500">${tx.memo}</div>
-          <div class="text-muted" style="font-size: 0.8rem">${new Date(tx.createdat).toLocaleString()}</div>
-        </td>
-        <td style="font-weight: 700; font-family: var(--font-family-headings-custom)">
-          ${formatCurrency(tx.amount)}
-        </td>
-        <td>
-          <span class="status-badge status-${tx.status}">
-            ${tx.status.charAt(0).toUpperCase() + tx.status.slice(1)}
-          </span>
-          ${tx.txhash ? `<div style="font-size: 0.8rem; margin-top: 4px"><a href="https://testnet.arcscan.app/tx/${tx.txhash}" target="_blank" style="color: var(--primary-light)">View on Explorer</a></div>` : ''}
-        </td>
-      </tr>
-    `).join('');
+    const visible = showAllTx ? txs : txs.slice(0, TX_PREVIEW_COUNT);
+    txBody.innerHTML = visible.map(renderTxRow).join('');
+
+    // Add or update the toggle button
+    let toggleBtn = document.getElementById('btn-toggle-tx');
+    if (txs.length > TX_PREVIEW_COUNT) {
+      if (!toggleBtn) {
+        toggleBtn = document.createElement('button');
+        toggleBtn.id = 'btn-toggle-tx';
+        toggleBtn.className = 'btn btn-outline';
+        toggleBtn.style.cssText = 'width: 100%; margin-top: 1rem; font-size: 0.85rem; padding: 0.5rem;';
+        toggleBtn.addEventListener('click', () => {
+          showAllTx = !showAllTx;
+          renderTransactions();
+        });
+        txBody.closest('.card')?.appendChild(toggleBtn);
+      }
+      toggleBtn.textContent = showAllTx ? `Show Less` : `See All ${txs.length} Transactions`;
+    } else if (toggleBtn) {
+      toggleBtn.remove();
+    }
   };
 
   formPayment?.addEventListener('submit', async (e) => {
@@ -98,13 +131,59 @@ document.addEventListener('DOMContentLoaded', () => {
       // Update UI
       renderTransactions();
       formPayment.reset();
-      showToast("Payment link generated successfully!", "success");
-      
-    } catch (error) {
-      showToast("Failed to create payment link: " + error.message, "error");
+    } catch (e) {
+      showToast(e.message || "Failed to create payment.", "error");
     }
   });
   
+  // Edit and Cancel Logic via Event Delegation
+  txBody?.addEventListener('click', (e) => {
+    // Edit Button
+    if (e.target.classList.contains('edit-btn')) {
+      const id = e.target.getAttribute('data-id');
+      const amount = e.target.getAttribute('data-amount');
+      document.getElementById('edit-payment-id').value = id;
+      document.getElementById('edit-amount-input').value = amount;
+      document.getElementById('edit-modal').classList.add('active');
+    }
+    
+    // Cancel Button (Opens Modal)
+    if (e.target.classList.contains('cancel-btn')) {
+      const id = e.target.getAttribute('data-id');
+      document.getElementById('cancel-payment-id').value = id;
+      document.getElementById('cancel-modal').classList.add('active');
+    }
+  });
+
+  // Save Edit
+  document.getElementById('btn-save-amount')?.addEventListener('click', async () => {
+    const id = document.getElementById('edit-payment-id').value;
+    const newAmount = document.getElementById('edit-amount-input').value;
+    
+    try {
+      await PaymentStore.updatePayment(id, arcKit.account, { amount: newAmount });
+      document.getElementById('edit-modal').classList.remove('active');
+      showToast("Amount updated successfully. Customers will see the new amount live.");
+      renderTransactions();
+    } catch (e) {
+      showToast("Failed to update amount.", "error");
+    }
+  });
+
+  // Confirm Cancel
+  document.getElementById('btn-confirm-cancel')?.addEventListener('click', async () => {
+    const id = document.getElementById('cancel-payment-id').value;
+    
+    try {
+      await PaymentStore.updatePayment(id, arcKit.account, { status: 'cancelled' });
+      document.getElementById('cancel-modal').classList.remove('active');
+      showToast("Payment link cancelled.");
+      renderTransactions();
+    } catch (e) {
+      showToast("Failed to cancel payment.", "error");
+    }
+  });
+
   // Initial render if loaded directly into dashboard
   setTimeout(() => {
     if (document.getElementById('view-dashboard').classList.contains('active')) {
