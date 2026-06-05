@@ -2,15 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import { createPublicClient, http, parseUnits } from 'viem';
 import { arcTestnet } from '../js/utils.js';
 
-let supabaseUrl = process.env.SUPABASE_URL || 'https://opfealrrtdfszyfvbhsj.supabase.co';
-
-if (supabaseUrl === 'your-supabase-project-url' || !supabaseUrl.startsWith('http')) {
-  supabaseUrl = 'https://opfealrrtdfszyfvbhsj.supabase.co';
-}
-
-if (supabaseUrl.endsWith('/')) {
-  supabaseUrl = supabaseUrl.slice(0, -1);
-}
+const supabaseUrl = 'https://opfealrrtdfszyfvbhsj.supabase.co';
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY;
 
 if (!supabaseServiceKey) {
