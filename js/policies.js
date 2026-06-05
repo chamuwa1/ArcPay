@@ -43,7 +43,7 @@ const policyContent = {
   }
 };
 
-document.addEventListener('DOMContentLoaded', () => {
+(() => {
   const policyModal = document.getElementById('policy-modal');
   const policyTitle = document.getElementById('policy-title');
   const policyContentDiv = document.getElementById('policy-content');
@@ -75,4 +75,4 @@ document.addEventListener('DOMContentLoaded', () => {
       policyModal.classList.remove('active');
     }
   });
-});
+})();

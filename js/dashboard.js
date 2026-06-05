@@ -3,7 +3,7 @@ import { PaymentStore } from './payment-store.js';
 import { supabase } from './supabase.js';
 import { formatCurrency, truncateAddress, showToast } from './utils.js';
 
-document.addEventListener('DOMContentLoaded', () => {
+(() => {
   const formPayment = document.getElementById('form-payment');
   const linkResult = document.getElementById('link-result');
   const checkoutUrl = document.getElementById('checkout-url');
@@ -204,4 +204,4 @@ document.addEventListener('DOMContentLoaded', () => {
       renderTransactions();
     }
   });
-});
+})();

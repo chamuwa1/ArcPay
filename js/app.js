@@ -1,7 +1,7 @@
 import { arcKit } from './arc-kit.js';
 import { truncateAddress, showToast } from './utils.js';
 
-document.addEventListener('DOMContentLoaded', () => {
+(() => {
   const btnConnect = document.getElementById('btn-connect');
   const btnGetStarted = document.getElementById('btn-get-started');
   const viewLanding = document.getElementById('view-landing');
@@ -223,4 +223,4 @@ document.addEventListener('DOMContentLoaded', () => {
       showDashboard();
     }
   }, 100);
-});
+})();

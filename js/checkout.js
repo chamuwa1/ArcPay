@@ -2,7 +2,7 @@ import { arcKit } from './arc-kit.js';
 import { supabase } from './supabase.js';
 import { parseUrlParams, formatCurrency, truncateAddress, ARC_TESTNET_CHAIN_ID, showToast } from './utils.js';
 
-document.addEventListener('DOMContentLoaded', () => {
+(() => {
   const params = parseUrlParams();
   
   // UI Elements
@@ -302,4 +302,4 @@ document.addEventListener('DOMContentLoaded', () => {
       btnPay.textContent = "Pay with USDC";
     }
   });
-});
+})();
