@@ -722,8 +722,10 @@ th {
 
   /* Header & Navigation */
   .header-content {
-    flex-direction: column;
-    gap: 1rem;
+    flex-direction: row;
+    flex-wrap: wrap;
+    position: relative;
+    gap: 0.5rem;
     padding: 1rem 0;
   }
   
@@ -821,23 +823,20 @@ th {
 
 @media screen and (max-width: 768px) {
   .mobile-menu-btn {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     position: absolute;
-    right: 0;
-    top: 1.5rem;
-  }
-  
-  .header-content {
-    flex-direction: row !important;
-    flex-wrap: wrap;
-    position: relative;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
   }
   
   /* The hamburger dropdown menu on mobile */
   .nav-center {
     display: none;
     position: absolute;
-    top: 4.5rem;
+    top: 100%;
     right: 0;
     left: auto;
     transform: none;
@@ -862,11 +861,18 @@ th {
     animation: fadeIn 0.2s ease;
   }
   
-  /* Reset header controls to stay in normal document flow */
+  /* Hide header-controls on mobile — wallet connect moves into burger menu */
   .header-controls {
-    width: 100%;
-    margin-top: 1rem;
-    justify-content: flex-start;
+    display: none;
+  }
+  
+  .header-controls.wallet-connected {
+    display: flex;
+    width: auto;
+    position: absolute;
+    right: 3.5rem;
+    top: 50%;
+    transform: translateY(-50%);
   }
 }
 

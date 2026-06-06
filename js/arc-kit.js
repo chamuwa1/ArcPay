@@ -32,6 +32,46 @@ export class ArcPayKit {
     // Request providers to announce themselves
     window.dispatchEvent(new Event('eip6963:requestProvider'));
     
+    // Mobile wallet detection fallback
+    // Mobile wallets (MetaMask app, Trust Wallet, Coinbase Wallet, etc.)
+    // inject window.ethereum directly but often don't support EIP-6963.
+    setTimeout(() => {
+      if (this.providers.length === 0 && window.ethereum) {
+        // Detect mobile wallet name from provider flags
+        let walletName = 'Mobile Wallet';
+        let walletIcon = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%234A7CFF"><circle cx="12" cy="12" r="10"/><path d="M12 7l5 8H7z" fill="white"/></svg>';
+        
+        if (window.ethereum.isMetaMask) {
+          walletName = 'MetaMask';
+          walletIcon = 'https://raw.githubusercontent.com/nicholasgarau/wallet-icons/master/icons/metamask.svg';
+        } else if (window.ethereum.isTrust) {
+          walletName = 'Trust Wallet';
+        } else if (window.ethereum.isCoinbaseWallet) {
+          walletName = 'Coinbase Wallet';
+        } else if (window.ethereum.isRabby) {
+          walletName = 'Rabby';
+        }
+        
+        const mobileProvider = {
+          info: {
+            uuid: 'mobile-injected-provider',
+            name: walletName,
+            icon: walletIcon,
+            rdns: 'io.mobile.wallet'
+          },
+          provider: window.ethereum
+        };
+        
+        this.providers.push(mobileProvider);
+        
+        // Restore session if previously connected
+        if (this.account && !this.activeProvider) {
+          this.activeProvider = window.ethereum;
+          this.initClients();
+        }
+      }
+    }, 300);
+
     // Safety fallback for page reloads: If EIP-6963 fails to restore the provider within 500ms, 
     // but the user is connected, forcefully use window.ethereum to prevent the app from breaking.
     setTimeout(() => {
