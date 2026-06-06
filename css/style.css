@@ -861,14 +861,17 @@ th {
     animation: fadeIn 0.2s ease;
   }
   
-  /* Hide header-controls on mobile — wallet connect moves into burger menu */
+  /* Show header-controls on mobile on a new line */
   .header-controls {
-    display: none;
+    display: flex;
+    width: 100%;
+    margin-top: 0.5rem;
+    justify-content: center;
   }
   
   .header-controls.wallet-connected {
-    display: flex;
     width: auto;
+    margin-top: 0;
     position: absolute;
     right: 3.5rem;
     top: 50%;
