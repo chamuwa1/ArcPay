@@ -822,7 +822,13 @@ th {
 }
 
 @media screen and (max-width: 768px) {
+  /* By default on mobile (disconnected), burger menu is hidden */
   .mobile-menu-btn {
+    display: none;
+  }
+  
+  /* When wallet connects, show the burger menu at the top right */
+  .header-content.wallet-connected .mobile-menu-btn {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -861,25 +867,32 @@ th {
     animation: fadeIn 0.2s ease;
   }
   
-  /* Show header-controls on mobile on a new line */
+  /* By default on mobile (disconnected), Connect Wallet button goes to top right */
   .header-controls {
     display: flex;
-    width: 100%;
-    margin-top: 0.5rem;
-    justify-content: flex-start;
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: auto;
+    margin-top: 0;
   }
 
   .header-controls .btn {
     width: auto;
+    padding: 0.5rem 1rem; /* Make it slightly smaller to fit header */
+    font-size: 0.9rem;
   }
   
-  .header-controls.wallet-connected {
-    width: auto;
-    margin-top: 0;
-    position: absolute;
-    right: 3.5rem;
-    top: 50%;
-    transform: translateY(-50%);
+  /* When connected, the wallet info container moves below the logo */
+  .header-content.wallet-connected .header-controls {
+    position: relative;
+    right: auto;
+    top: auto;
+    transform: none;
+    width: 100%;
+    margin-top: 0.5rem;
+    justify-content: flex-start;
   }
 }
 

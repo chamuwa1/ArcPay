@@ -134,20 +134,20 @@ import { truncateAddress, showToast } from './utils.js';
   });
 
   const updateHeaderState = (account) => {
-    const headerControls = document.querySelector('.header-controls');
+    const headerContent = document.querySelector('.header-content');
     if (account) {
       btnConnect.classList.add('hidden');
       walletAddress.textContent = truncateAddress(account);
       walletContainer.classList.remove('hidden');
       navDashboardLink?.classList.remove('hidden');
       navHomeLink?.classList.remove('hidden');
-      headerControls?.classList.add('wallet-connected');
+      headerContent?.classList.add('wallet-connected');
     } else {
       btnConnect.classList.remove('hidden');
       walletContainer.classList.add('hidden');
       navDashboardLink?.classList.add('hidden');
       navHomeLink?.classList.add('hidden');
-      headerControls?.classList.remove('wallet-connected');
+      headerContent?.classList.remove('wallet-connected');
     }
   };
 
